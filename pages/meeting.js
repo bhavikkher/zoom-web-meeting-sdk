@@ -39,12 +39,13 @@ const Meeting = () => {
     }
 
     const onInitHandle = () => {
+        console.log("window.location.origin: ", window.location.origin);
         zoomModule.init({
             leaveUrl: `${window.location.origin}/thank-you`,
-            // isSupportAV: true,
-            // disableCORP: !window.crossOriginIsolated,
-            // screenShare: true,
-            // disableRecord: false,
+            isSupportAV: true,
+            disableCORP: !window.crossOriginIsolated,
+            screenShare: true,
+            disableRecord: false,
             success: () => {
                 console.log(mn, email, pwd, name, role);
                 fetch(SIGNATURE_ENDPOINT, {

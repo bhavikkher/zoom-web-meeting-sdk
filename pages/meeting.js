@@ -4,22 +4,7 @@ import { ZOOM_JWT_API_KEY, SIGNATURE_ENDPOINT } from '../constants/common'
 
 const Meeting = () => {
     const { query } = useRouter();
-    const { mn, email, pwd, name } = query;
-
-    const [formData, setFormData] = React.useState({
-        userName: "",
-        fullname: "",
-        email: "",
-        password: "",
-        meetingId: "",
-        role: 0,
-    });
-
-    React.useEffect(() => {
-        if (Object.keys(query).length) {
-            setFormData({ ...formData, "meetingId": mn, email, "password": pwd, userName: name, fullname: name });
-        }
-    }, [query, formData, email, mn, name, pwd]);
+    const { mn, email, pwd, name, role } = query;
 
     const [zoomModule, setZoomModule] = React.useState(null);
 
@@ -56,28 +41,29 @@ const Meeting = () => {
     const onInitHandle = () => {
         zoomModule.init({
             leaveUrl: `${window.location.origin}/thank-you`,
-            isSupportAV: true,
+            // isSupportAV: true,
             // disableCORP: !window.crossOriginIsolated,
             // screenShare: true,
             // disableRecord: false,
             success: () => {
-
+                console.log(mn, email, pwd, name, role);
                 fetch(SIGNATURE_ENDPOINT, {
                     method: "POST",
                     body: JSON.stringify({
-                        meetingNumber: formData.meetingId,
-                        role: formData.role,
+                        meetingNumber: mn,
+                        role: role,
                     }),
                 })
                     .then((res) => res.json())
                     .then((response) => {
                         const signature = response.signature;
                         zoomModule.join({
-                            meetingNumber: formData.meetingId,
-                            userName: formData.userName,
+                            meetingNumber: mn,
+                            userName: name,
+                            email: email,
                             signature: signature,
                             apiKey: ZOOM_JWT_API_KEY,
-                            passWord: formData.password,
+                            passWord: pwd,
                             success: () => {
                                 console.log('join meeting success')
                             },

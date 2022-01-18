@@ -7,3 +7,9 @@
     @apply bg-slate-100;
   }
 }
+@layer components {
+  .required:after {
+    content: " *";
+    color: red;
+  }
+}

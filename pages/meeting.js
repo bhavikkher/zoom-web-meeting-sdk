@@ -2,31 +2,29 @@ import React from 'react'
 import { useRouter } from 'next/router'
 import { ZOOM_JWT_API_KEY, SIGNATURE_ENDPOINT } from '../constants/common'
 
-const meeting = () => {
+const Meeting = () => {
     const { query } = useRouter();
     const { mn, email, pwd, name } = query;
 
     const [formData, setFormData] = React.useState({
-        userName: name,
-        fullname: name,
-        email: email,
-        password: pwd,
-        meetingId: mn,
+        userName: "",
+        fullname: "",
+        email: "",
+        password: "",
+        meetingId: "",
         role: 0,
     });
 
     React.useEffect(() => {
         if (Object.keys(query).length) {
             setFormData({ ...formData, "meetingId": mn, email, "password": pwd, userName: name, fullname: name });
-
         }
-    }, [query]);
+    }, [query, formData, email, mn, name, pwd]);
 
     const [zoomModule, setZoomModule] = React.useState(null);
 
     React.useEffect(() => {
         if (zoomModule) {
-            console.log(window.location.origin);
             onInitHandle();
         }
     }, [zoomModule])
@@ -111,4 +109,4 @@ const meeting = () => {
         <>Loading...</>
     )
 }
-export default meeting
+export default Meeting

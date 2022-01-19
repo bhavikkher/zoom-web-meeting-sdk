@@ -1,10 +1,10 @@
 import React from 'react'
 import { useRouter } from 'next/router'
-import { ZOOM_JWT_API_KEY, SIGNATURE_ENDPOINT } from '../constants/common'
+import { ZOOM_JWT_API_KEY, ZOOM_JWT_API_SECRET } from '../constants/common'
 
 const Meeting = () => {
     const { query } = useRouter();
-    const { mn, email, pwd, name, role } = query;
+    const { mn, email, pwd, name, role, lang = 'en-US', china = 0 } = query;
 
     const [zoomModule, setZoomModule] = React.useState(null);
 
@@ -18,13 +18,7 @@ const Meeting = () => {
         loadZoomMeeting();
     }, [])
 
-
     const loadZoomMeeting = async () => {
-        // The import method below was used because for import { ZoomMtg } from '@zoomus/websdk', 
-        // the ZoomMtg CSS will overide the project's React app global CSS and will cause full black screen throughout the web app 
-        // and even after if you remove the black screen, it will also cause the web page to not be scrollable or buttons/text field to not be responsive. 
-        // Hence, importing the module in useEffect.
-
         await import("@zoomus/websdk")
             .then(async (module) => {
                 try {
@@ -32,7 +26,7 @@ const Meeting = () => {
                     setZoomModule(module2)
                 }
                 catch (error) {
-                    console.error("error: ", error);
+                    console.error("loadZoomMeeting: ", error);
                     // window.location.href = "/"
                 }
             })
@@ -40,43 +34,67 @@ const Meeting = () => {
 
     const onInitHandle = () => {
         console.log("window.location.origin: ", window.location.origin);
+
         zoomModule.init({
             leaveUrl: `${window.location.origin}/thank-you`,
             isSupportAV: true,
-            disableCORP: !window.crossOriginIsolated,
+            // disableCORP: !window.crossOriginIsolated,
             screenShare: true,
-            disableRecord: false,
-            success: () => {
-                console.log(mn, email, pwd, name, role);
-                fetch(SIGNATURE_ENDPOINT, {
-                    method: "POST",
-                    body: JSON.stringify({
-                        meetingNumber: mn,
-                        role: role,
-                    }),
-                })
-                    .then((res) => res.json())
-                    .then((response) => {
-                        const signature = response.signature;
+            // disableRecord: false,
+            disablePreview: true,
+            success: (initResponse) => {
+                console.log("initResponse: ", initResponse);
+                zoomModule.generateSignature({
+                    meetingNumber: mn,
+                    apiKey: ZOOM_JWT_API_KEY,
+                    apiSecret: ZOOM_JWT_API_SECRET,
+                    role: role,
+                    success: function (res) {
+                        let signature = res.result;
+                        // Join meeting
                         zoomModule.join({
                             meetingNumber: mn,
                             userName: name,
-                            email: email,
-                            signature: signature,
-                            apiKey: ZOOM_JWT_API_KEY,
+                            userEmail: email,
                             passWord: pwd,
-                            success: () => {
-                                console.log('join meeting success')
+                            apiKey: ZOOM_JWT_API_KEY,
+                            signature: signature,
+                            success: function (res) {
+                                console.log("join meeting success");
+                                console.log("get attendeelist");
+                                zoomModule.getAttendeeslist({});
+                                zoomModule.getCurrentUser({
+                                    success: function (res) {
+                                        console.log("success getCurrentUser", res.result.currentUser);
+                                    },
+                                });
+
+                                zoomModule.inMeetingServiceListener('onUserJoin', function (data) {
+                                    console.log('inMeetingServiceListener onUserJoin', data);
+                                });
+
+                                zoomModule.inMeetingServiceListener('onUserLeave', function (data) {
+                                    console.log('inMeetingServiceListener onUserLeave', data);
+                                });
+
+                                zoomModule.inMeetingServiceListener('onUserIsInWaitingRoom', function (data) {
+                                    console.log('inMeetingServiceListener onUserIsInWaitingRoom', data);
+                                });
+
+                                zoomModule.inMeetingServiceListener('onMeetingStatus', function (data) {
+                                    console.log('inMeetingServiceListener onMeetingStatus', data);
+                                });
                             },
-                            error: (res) => {
-                                console.log('Error generating signature')
-                                console.log(res)
-                            }
-                        })
-                    });
+                            error: function (res) {
+                                console.log("Joining Error: ", res);
+                            },
+                        });
+                    },
+                    error: ((err) => { console.error('Error while generating Signature', err); })
+                });
             },
-            error: (error) => {
-                console.error(error);
+            error: (initError) => {
+                console.error("initError: ", initError);
             }
         })
     }
@@ -88,7 +106,9 @@ const Meeting = () => {
         await ZoomMtg.setZoomJSLib('https://source.zoom.us/2.1.1/lib', '/av');
         await ZoomMtg.preLoadWasm();
         await ZoomMtg.prepareWebSDK();
-
+        ZoomMtg.i18n.load(lang);
+        ZoomMtg.i18n.reload(lang);
+        ZoomMtg.reRender({ lang: lang });
         return ZoomMtg;
     }
 

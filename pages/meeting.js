@@ -2,6 +2,10 @@ import React from 'react'
 import { useRouter } from 'next/router'
 import { ZOOM_JWT_API_KEY, ZOOM_JWT_API_SECRET } from '../constants/common'
 
+// SDK styles
+import 'node_modules/@zoomus/websdk/dist/css/bootstrap.css'
+import 'node_modules/@zoomus/websdk/dist/css/react-select.css'
+
 const Meeting = () => {
     const { query } = useRouter();
     const { mn, email, pwd, name, role, lang = 'en-US', china = 0 } = query;
@@ -100,9 +104,7 @@ const Meeting = () => {
     }
 
     const prepareLoadingWebSDK = async (module) => {
-        // var base_url = window.location.origin;
         let ZoomMtg = module.ZoomMtg
-        // await ZoomMtg.setZoomJSLib(`${base_url}/node_modules/@zoomus/websdk/dist/lib`, '/av');
         await ZoomMtg.setZoomJSLib('https://source.zoom.us/2.1.1/lib', '/av');
         await ZoomMtg.preLoadWasm();
         await ZoomMtg.prepareWebSDK();

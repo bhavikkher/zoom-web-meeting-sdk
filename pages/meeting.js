@@ -49,7 +49,7 @@ const Meeting = () => {
             success: (initResponse) => {
                 console.log("initResponse: ", initResponse);
                 zoomModule.generateSignature({
-                    meetingNumber: mn,
+                    meetingNumber: mn.trim(),
                     apiKey: ZOOM_JWT_API_KEY,
                     apiSecret: ZOOM_JWT_API_SECRET,
                     role: role,
@@ -57,10 +57,10 @@ const Meeting = () => {
                         let signature = res.result;
                         // Join meeting
                         zoomModule.join({
-                            meetingNumber: mn,
+                            meetingNumber: mn.trim(),
                             userName: name,
                             userEmail: email,
-                            passWord: pwd,
+                            passWord: pwd.trim(),
                             apiKey: ZOOM_JWT_API_KEY,
                             signature: signature,
                             success: function (res) {

@@ -35,8 +35,8 @@ export default function Home() {
 
       <Header />
 
-      <section className='w-11/12 h-full mx-auto flex items-center justify-center my-5 mb-10'>
-        <div className="bg-white flex flex-col p-8 relative rounded-lg shadow-md w-6/12">
+      <section className='w-full h-full mx-auto flex items-center justify-center my-5 mb-10'>
+        <div className="bg-white flex flex-col p-8 relative rounded-lg shadow-md w-11/12 lg:w-6/12">
           <h2 className="text-gray-900 text-lg mb-1 font-medium title-font">
             Join Meeting
           </h2>
